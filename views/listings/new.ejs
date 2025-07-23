@@ -1,0 +1,110 @@
+<%= layout("layouts/boilerplate.ejs") %>
+<body>
+ <div class="row">
+   <div class="col-8 offset-2">
+    <br>
+    <h3>Create New Listing</h3>
+
+      <form action="/listings" method="POST" novalidate class="needs-validation" enctype="multipart/form-data" >
+        <div class="mb-3">
+          <label for="title" class="form-label">Title</label>
+        <input type="text" name="listing[title]" placeholder="Enter the Title" class="form-control" required>
+        <div class="valid-feedback">Title looks good</div>
+        </div>
+        
+        <div class="mb-3"> 
+          <label for="description" class="form-label">Description</label>
+          <textarea name="listing[description]" placeholder="Enter Description" class="form-control" id="" required></textarea>
+          <div class="invalid-feedback">Please write something about the listed hotel/stay</div>
+        </div>
+        
+        
+        <!-- Image upload -->
+
+         <div class="mb-3">
+        <label for="image" class="form-label">Upload Listing Image</label>
+          <input type="hidden" name="listing[image][filename]" value="listingimage">
+        <input type="file" name="listing[image][url]" class="form-control" placeholder="Enter the Image URL" >    
+         </div>
+        
+        <div class="row">
+          <div class="mb-3 col-md-4">
+            <label for="price" class="form-label">Price</label>
+            <input type="number" name="listing[price]" class="form-control" placeholder="Enter the Price" required>
+            <div class="invalid-feedback">Please enter a valid price</div>
+          </div>
+          
+         <div class="mb-3 col-md-8">
+         <label for="country" class="form-label">Country</label>
+         <input type="text" name="listing[country]" class="form-control" placeholder="Enter the Country" required>
+         <div class="invalid-feedback">Please enter the country name</div>
+         </div>
+        </div>
+        
+       <div class="mb-3">
+        <label for="location" class="form-label">Location</label>
+        <!-- <input type="text" name="listing[location]" class="form-control" placeholder="Enter the Location" required> -->
+         <div class="input-group">
+    <input type="text" id="address-input" name="listing[location]" class="form-control" placeholder="Enter the Location" required>
+    <button class="btn btn-outline-secondary" type="button" onclick="geocodeAddress()">Locate</button>
+  </div>
+        <div class="invalid-feedback">Please enter the location</div>
+       </div>
+
+         <!-- map preview -->
+          <!-- Map preview -->
+<div id="map" style="height: 400px; display: none; margin-top: 10px;"></div>
+
+<!-- Hidden inputs for lat/lon -->
+<input type="hidden" name="latitude" id="lat">
+<input type="hidden" name="longitude" id="lon">
+        
+        <br><br>
+        <button class="btn btn-dark add-btn">Add</button>
+        <br><br>
+      </form>
+    </div>
+    </div>
+    <!-- code for js geocoding -->
+     <!-- From documentation -->
+     <script>
+  let map = L.map('map').setView([20.5937, 78.9629], 5); // default view: India
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  let marker;
+
+  function geocodeAddress() {
+    const address = document.getElementById('address-input').value;
+    if (!address) {
+      alert("Please enter an address.");
+      return;
+    }
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.length) {
+          alert("No results found.");
+          return;
+        }
+
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lon]).addTo(map).bindPopup(address).openPopup();
+        map.invalidateSize();
+        map.setView([lat, lon], 13);
+        document.getElementById('map').style.display = 'block';
+
+        // Set hidden input values
+        document.getElementById('lat').value = lat;
+        document.getElementById('lon').value = lon;
+      });
+  }
+</script>
+
+</body>
